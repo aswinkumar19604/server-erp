@@ -24,7 +24,11 @@ import supplierRoutes
 from "./routes/supplierRoutes.js";
 import reportRoutes
 from "./routes/reportRoutes.js";
-
+import accountingRoutes from "./routes/accountingRoutes.js";
+import hrRoutes from "./routes/hrRoutes.js";
+import projectRoutes from "./routes/projectRoutes.js";
+import leadRoutes from "./routes/leadRoutes.js";
+import expenseRoutes from "./routes/expenseRoutes.js";
 
 const app = express();
 
@@ -82,4 +86,9 @@ app.use(
   "/api",
   reportRoutes
 );
+app.use("/api/accounting", accountingRoutes);
+app.use("/api/hr", hrRoutes);
+app.use("/api/projects", projectRoutes);
+app.use("/api/leads", leadRoutes);
+app.use("/api/expenses", expenseRoutes);
 export default app;

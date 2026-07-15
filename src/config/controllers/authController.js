@@ -40,186 +40,186 @@ export const register = async (req, res) => {
   }
 };
 
-// export const login = async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-
-//     const user = await User.findOne({ email });
-
-//     if (!user) {
-//       return res.status(400).json({
-//         message: "Invalid email"
-//       });
-//     }
-
-//     const isMatch = await bcrypt.compare(password, user.password);
-
-//     if (!isMatch) {
-//       return res.status(400).json({
-//         message: "Invalid password"
-//       });
-//     }
-
-//     const token = jwt.sign(
-//       {
-//         id: user._id,
-//         role: user.role   // ✅ ROLE ADDED INSIDE TOKEN
-//       },
-//       process.env.JWT_SECRET,
-//       {
-//         expiresIn: "1d"
-//       }
-//     );
-
-//     await transporter.sendMail({
-//       from: process.env.MAIL_USER,
-//       to: user.email, 
-//       subject: "Login Successful",
-//       html: `
-//         <h2>Hello ${user.name}</h2>
-//         <p>You successfully logged into ERP System.</p>
-//       `
-//     });
-
-//     res.status(200).json({
-//       message: "Login successful",
-//       token,
-
-//       // ✅ SEND ROLE TO FRONTEND
-//       user: {
-//         _id: user._id,
-//         name: user.name,
-//         email: user.email,
-//         role: user.role
-//       }
-//     });
-
-//   } catch (error) {
-//     res.status(500).json({
-//       message: error.message
-//     });
-//   }
-// };
 export const login = async (req, res) => {
-
   try {
-
     const { email, password } = req.body;
-
 
     const user = await User.findOne({ email });
 
-
     if (!user) {
-
       return res.status(400).json({
-        message:"Invalid email"
+        message: "Invalid email"
       });
-
     }
 
-
-
-    const isMatch = await bcrypt.compare(
-      password,
-      user.password
-    );
-
+    const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-
       return res.status(400).json({
-        message:"Invalid password"
+        message: "Invalid password"
       });
-
     }
-
-
 
     const token = jwt.sign(
-
       {
-        id:user._id,
-        role:user.role
+        id: user._id,
+        role: user.role   // ✅ ROLE ADDED INSIDE TOKEN
       },
-
       process.env.JWT_SECRET,
-
       {
-        expiresIn:"1d"
+        expiresIn: "1d"
       }
-
     );
 
-
-
-    // Email should not stop login
-
-    try {
-
-      await transporter.sendMail({
-
-        from:process.env.MAIL_USER,
-
-        to:user.email,
-
-        subject:"Login Successful",
-
-        html:`
+    await transporter.sendMail({
+      from: process.env.MAIL_USER,
+      to: user.email, 
+      subject: "Login Successful",
+      html: `
         <h2>Hello ${user.name}</h2>
         <p>You successfully logged into ERP System.</p>
-        `
-
-      });
-
-
-    } catch(emailError){
-
-      console.log(
-        "Mail error:",
-        emailError.message
-      );
-
-    }
-
-
+      `
+    });
 
     res.status(200).json({
-
-      message:"Login successful",
-
+      message: "Login successful",
       token,
 
-
-      user:{
-
-        _id:user._id,
-
-        name:user.name,
-
-        email:user.email,
-
-        role:user.role
-
+      // ✅ SEND ROLE TO FRONTEND
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
       }
-
     });
 
-
-
-  } catch(error){
-
-
+  } catch (error) {
     res.status(500).json({
-
-      message:error.message
-
+      message: error.message
     });
-
-
   }
-
 };
+// export const login = async (req, res) => {
+//   console.log("Login request received:", req.body);
+//   try {
+
+//     const { email, password } = req.body;
+//     console.log("Email received:", email);
+
+//     const user = await User.findOne({ email });
+
+
+//     if (!user) {
+
+//       return res.status(400).json({
+//         message:"Invalid email"
+//       });
+
+//     }
+
+
+
+//     const isMatch = await bcrypt.compare(
+//       password,
+//       user.password
+//     );
+
+
+//     if (!isMatch) {
+
+//       return res.status(400).json({
+//         message:"Invalid password"
+//       });
+
+//     }
+
+
+
+//     const token = jwt.sign(
+
+//       {
+//         id:user._id,
+//         role:user.role
+//       },
+
+//       process.env.JWT_SECRET,
+
+//       {
+//         expiresIn:"1d"
+//       }
+
+//     );
+
+
+
+//     // Email should not stop login
+
+//     try {
+
+//       await transporter.sendMail({
+
+//         from:process.env.MAIL_USER,
+
+//         to:user.email,
+
+//         subject:"Login Successful",
+
+//         html:`
+//         <h2>Hello ${user.name}</h2>
+//         <p>You successfully logged into ERP System.</p>
+//         `
+
+//       });
+
+
+//     } catch(emailError){
+
+//       console.log(
+//         "Mail error:",
+//         emailError.message
+//       );
+
+//     }
+
+
+
+//     res.status(200).json({
+
+//       message:"Login successful",
+
+//       token,
+
+
+//       user:{
+
+//         _id:user._id,
+
+//         name:user.name,
+
+//         email:user.email,
+
+//         role:user.role
+
+//       }
+
+//     });
+
+
+
+//   } catch(error){
+
+
+//     res.status(500).json({
+
+//       message:error.message
+
+//     });
+
+
+//   }
+
+// };
 export const forgotPassword = async (
   req,
   res
