@@ -1,5 +1,5 @@
-import Employee
-from "../models/Employee.js";
+import Employee from "../models/Employee.js";
+import { logAudit } from "../utils/auditLogger.js";
 
 export const createEmployee =
 async (req, res) => {
@@ -62,6 +62,15 @@ async (req, res) => {
         req.body
       );
 
+    logAudit(
+      req,
+      "CREATE",
+      "HR",
+      employee._id,
+      `Employee added: ${employee.name} (${employee.designation})`,
+      { name: employee.name, email: employee.email, designation: employee.designation }
+    );
+
     res.status(201).json({
       message:
         "Employee Added",
@@ -108,6 +117,15 @@ async (req, res) => {
         { new: true }
       );
 
+    logAudit(
+      req,
+      "UPDATE",
+      "HR",
+      employee._id,
+      `Employee records updated: ${employee.name} (${employee.email})`,
+      req.body
+    );
+
     res.status(200).json({
       message:
         "Employee Updated",
@@ -127,9 +145,25 @@ async (req, res) => {
 
   try {
 
-    await Employee.findByIdAndDelete(
-      req.params.id
-    );
+    const employee = await Employee.findById(req.params.id);
+    if (employee) {
+      await Employee.findByIdAndDelete(
+        req.params.id
+      );
+
+      logAudit(
+        req,
+        "DELETE",
+        "HR",
+        employee._id,
+        `Employee contract deleted: ${employee.name} (${employee.email})`,
+        { name: employee.name, email: employee.email }
+      );
+    } else {
+      await Employee.findByIdAndDelete(
+        req.params.id
+      );
+    }
 
     res.status(200).json({
       message:

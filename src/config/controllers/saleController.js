@@ -4,6 +4,9 @@ import Inventory from "../models/Inventory.js";
 import Customer from "../models/Customer.js";
 import StockHistory from "../models/StockHistory.js";
 import Notification from "../models/Notification.js";
+import { postJournalEntry } from "./doubleEntryController.js";
+import { logAudit } from "../utils/auditLogger.js";
+import { sendInvoiceEmail } from "../utils/emailService.js";
 
 // =========================
 // CREATE SALE
@@ -99,6 +102,27 @@ export const createSale = async (req, res) => {
       });
 
     // =========================
+    // POST JOURNAL ENTRY (DOUBLE-ENTRY)
+    // =========================
+    postJournalEntry({
+      description: `Sale of ${productData.name} - ${invoiceNumber}`,
+      lines: [
+        {
+          accountCode: paymentStatus === "Paid" ? "1010" : "1200", // Cash or A/R
+          type: "Debit",
+          amount: total
+        },
+        {
+          accountCode: "4000", // Sales Revenue
+          type: "Credit",
+          amount: total
+        }
+      ],
+      referenceId: sale._id,
+      referenceType: "Sale"
+    });
+
+    // =========================
     // STOCK HISTORY
     // =========================
 
@@ -116,6 +140,16 @@ export const createSale = async (req, res) => {
       newStock;
 
     await productData.save();
+
+    // Log audit activity
+    logAudit(
+      req,
+      "CREATE",
+      "Sales",
+      sale._id,
+      `Sales invoice checkout completed: ${invoiceNumber} for ₹${total.toLocaleString()}`,
+      { product: productData.name, quantity, total }
+    );
 
     // =========================
     // SALE NOTIFICATION
@@ -190,6 +224,15 @@ export const createSale = async (req, res) => {
 
       }
     }
+
+    // =========================
+    // DISPATCH TRANSACTION INVOICE EMAIL (BACKGROUND)
+    // =========================
+    sendInvoiceEmail({
+      sale,
+      customer: customerData,
+      product: productData
+    }).catch(err => console.log("Email background error:", err));
 
     console.log("SALE COMPLETED");
 
@@ -355,6 +398,16 @@ export const deleteSale = async (req, res) => {
 
     await Sale.findByIdAndDelete(
       req.params.id
+    );
+
+    // Log audit activity
+    logAudit(
+      req,
+      "DELETE",
+      "Sales",
+      sale._id,
+      `Sales invoice record deleted: ${sale.invoiceNumber} for ₹${sale.total.toLocaleString()}`,
+      { invoiceNumber: sale.invoiceNumber, total: sale.total }
     );
 
     console.log("SALE DELETED");

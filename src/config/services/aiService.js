@@ -21,6 +21,21 @@ import Sale from "../models/Sale.js";
 import Purchase from "../models/Purchase.js";
 import Notification from "../models/Notification.js";
 import StockHistory from "../models/StockHistory.js";
+import PurchaseOrder from "../models/PurchaseOrder.js";
+import GoodsReceipt from "../models/GoodsReceipt.js";
+import Account from "../models/Account.js";
+import JournalEntry from "../models/JournalEntry.js";
+import Attendance from "../models/Attendance.js";
+import Leave from "../models/Leave.js";
+import Payroll from "../models/Payroll.js";
+import Project from "../models/Project.js";
+import Lead from "../models/Lead.js";
+import Expense from "../models/Expense.js";
+import BOM from "../models/BOM.js";
+import WorkOrder from "../models/WorkOrder.js";
+import Quotation from "../models/Quotation.js";
+import SalesOrder from "../models/SalesOrder.js";
+import AuditLog from "../models/AuditLog.js";
 
 // ----------------------------
 // Helper Functions
@@ -188,6 +203,140 @@ const getStockHistorySummary = async () => {
 
 // ----------------------------
 
+const getPurchaseOrdersSummary = async () => {
+    const total = await PurchaseOrder.countDocuments();
+    const purchaseOrders = await PurchaseOrder.find()
+        .populate("supplier")
+        .populate("items.product")
+        .sort({ createdAt: -1 })
+        .limit(10);
+    return { total, purchaseOrders };
+};
+
+// ----------------------------
+
+const getGoodsReceiptsSummary = async () => {
+    const total = await GoodsReceipt.countDocuments();
+    const receipts = await GoodsReceipt.find()
+        .populate("purchaseOrder")
+        .populate("itemsReceived.product")
+        .sort({ createdAt: -1 })
+        .limit(10);
+    return { total, receipts };
+};
+
+// ----------------------------
+
+const getLedgerSummary = async () => {
+    const accounts = await Account.find().sort({ code: 1 });
+    const recentJournals = await JournalEntry.find()
+        .populate("lines.account")
+        .sort({ createdAt: -1 })
+        .limit(10);
+    return { accounts: accounts.map(a => ({ name: a.name, type: a.type, balance: a.balance })), recentJournals };
+};
+
+const getAttendanceSummary = async () => {
+    const total = await Attendance.countDocuments();
+    const records = await Attendance.find()
+        .populate("employee")
+        .sort({ date: -1 })
+        .limit(15);
+    return { total, records };
+};
+
+const getLeaveSummary = async () => {
+    const total = await Leave.countDocuments();
+    const records = await Leave.find()
+        .populate("employee")
+        .sort({ startDate: -1 })
+        .limit(15);
+    return { total, records };
+};
+
+const getPayrollSummary = async () => {
+    const total = await Payroll.countDocuments();
+    const records = await Payroll.find()
+        .populate("employee")
+        .sort({ month: -1 })
+        .limit(15);
+    return { total, records };
+};
+
+const getProjectSummary = async () => {
+    const total = await Project.countDocuments();
+    const records = await Project.find()
+        .populate("members")
+        .sort({ createdAt: -1 })
+        .limit(15);
+    return { total, records };
+};
+
+const getLeadSummary = async () => {
+    const total = await Lead.countDocuments();
+    const records = await Lead.find()
+        .sort({ createdAt: -1 })
+        .limit(20);
+    return { total, records };
+};
+
+const getExpenseSummary = async () => {
+    const total = await Expense.countDocuments();
+    const records = await Expense.find()
+        .sort({ date: -1 })
+        .limit(20);
+    return { total, records };
+};
+
+const getBOMSummary = async () => {
+    const total = await BOM.countDocuments();
+    const records = await BOM.find()
+        .populate("product")
+        .populate("components.product")
+        .limit(15);
+    return { total, records };
+};
+
+const getWorkOrderSummary = async () => {
+    const total = await WorkOrder.countDocuments();
+    const records = await WorkOrder.find()
+        .populate("productToProduce")
+        .sort({ createdAt: -1 })
+        .limit(15);
+    return { total, records };
+};
+
+const getQuotationSummary = async () => {
+    const total = await Quotation.countDocuments();
+    const records = await Quotation.find()
+        .populate("customer")
+        .populate("items.product")
+        .sort({ createdAt: -1 })
+        .limit(15);
+    return { total, records };
+};
+
+const getSalesOrderSummary = async () => {
+    const total = await SalesOrder.countDocuments();
+    const records = await SalesOrder.find()
+        .populate("customer")
+        .populate("items.product")
+        .sort({ createdAt: -1 })
+        .limit(15);
+    return { total, records };
+};
+
+const getAuditLogSummary = async () => {
+    const total = await AuditLog.countDocuments();
+    const records = await AuditLog.find()
+        .populate("operator")
+        .sort({ createdAt: -1 })
+        .limit(20);
+    return { total, records };
+};
+
+// ----------------------------
+
 const buildDatabaseContext = async (intent) => {
     switch (intent) {
         case "PRODUCT":
@@ -210,6 +359,48 @@ const buildDatabaseContext = async (intent) => {
 
         case "PURCHASE":
             return await getPurchaseSummary();
+
+        case "PURCHASE_ORDER":
+            return await getPurchaseOrdersSummary();
+
+        case "GOODS_RECEIPT":
+            return await getGoodsReceiptsSummary();
+
+        case "LEDGER":
+            return await getLedgerSummary();
+
+        case "ATTENDANCE":
+            return await getAttendanceSummary();
+
+        case "LEAVE":
+            return await getLeaveSummary();
+
+        case "PAYROLL":
+            return await getPayrollSummary();
+
+        case "PROJECT":
+            return await getProjectSummary();
+
+        case "LEAD":
+            return await getLeadSummary();
+
+        case "EXPENSE":
+            return await getExpenseSummary();
+
+        case "BOM":
+            return await getBOMSummary();
+
+        case "WORK_ORDER":
+            return await getWorkOrderSummary();
+
+        case "QUOTATION":
+            return await getQuotationSummary();
+
+        case "SALES_ORDER":
+            return await getSalesOrderSummary();
+
+        case "AUDIT_LOG":
+            return await getAuditLogSummary();
 
         case "DASHBOARD":
             return await getDashboardSummary();

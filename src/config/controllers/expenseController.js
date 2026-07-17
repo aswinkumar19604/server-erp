@@ -1,4 +1,5 @@
 import Expense from "../models/Expense.js";
+import { postJournalEntry } from "./doubleEntryController.js";
 
 export const getExpenses = async (req, res) => {
   try {
@@ -13,6 +14,26 @@ export const createExpense = async (req, res) => {
   try {
     const expense = new Expense(req.body);
     await expense.save();
+
+    // Auto post journal entry
+    postJournalEntry({
+      description: `Expense: ${expense.title} (${expense.category})`,
+      lines: [
+        {
+          accountCode: "5100", // Operating Expenses
+          type: "Debit",
+          amount: expense.amount
+        },
+        {
+          accountCode: "1010", // Cash / Bank
+          type: "Credit",
+          amount: expense.amount
+        }
+      ],
+      referenceId: expense._id,
+      referenceType: "Expense"
+    });
+
     return res.status(201).json(expense);
   } catch (error) {
     return res.status(500).json({ message: error.message });

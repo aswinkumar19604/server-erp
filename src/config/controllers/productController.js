@@ -1,5 +1,5 @@
-import Product
-from "../models/Product.js";
+import Product from "../models/Product.js";
+import { logAudit } from "../utils/auditLogger.js";
 
 export const createProduct =
 async (req, res) => {
@@ -41,6 +41,15 @@ async (req, res) => {
       await Product.create(
         req.body
       );
+
+    logAudit(
+      req,
+      "CREATE",
+      "Inventory",
+      product._id,
+      `Product item registered: ${product.name} (SKU: ${product.sku})`,
+      { name: product.name, sku: product.sku, price: product.price, stock: product.stock }
+    );
 
     res.status(201).json({
       message:
@@ -94,6 +103,15 @@ export const updateProduct = async (req, res) => {
     // 1. update product
     Object.assign(product, req.body);
     await product.save();
+
+    logAudit(
+      req,
+      "UPDATE",
+      "Inventory",
+      product._id,
+      `Product details updated: ${product.name} (SKU: ${product.sku})`,
+      req.body
+    );
 
     // 2. sync inventory
     const inventory = await Inventory.findOne({
@@ -150,6 +168,15 @@ export const deleteProduct = async (req, res) => {
 
     // 3. Delete product
     await Product.findByIdAndDelete(productId);
+
+    logAudit(
+      req,
+      "DELETE",
+      "Inventory",
+      product._id,
+      `Product catalog item deleted: ${product.name} (SKU: ${product.sku})`,
+      { name: product.name, sku: product.sku }
+    );
 
     return res.status(200).json({
       message: "Product & Inventory deleted successfully"

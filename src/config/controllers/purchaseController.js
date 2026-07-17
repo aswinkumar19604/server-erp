@@ -4,6 +4,8 @@ import Inventory from "../models/Inventory.js";
 import Supplier from "../models/Supplier.js";
 import StockHistory from "../models/StockHistory.js";
 import Notification from "../models/Notification.js";
+import { postJournalEntry } from "./doubleEntryController.js";
+import { logAudit } from "../utils/auditLogger.js";
 
 // =========================
 // CREATE PURCHASE
@@ -94,6 +96,27 @@ export const createPurchase = async (req, res) => {
       });
 
     // =========================
+    // POST JOURNAL ENTRY (DOUBLE-ENTRY)
+    // =========================
+    postJournalEntry({
+      description: `Purchase of ${productData.name} - ${invoiceNumber}`,
+      lines: [
+        {
+          accountCode: "1300", // Inventory Asset
+          type: "Debit",
+          amount: total
+        },
+        {
+          accountCode: paymentStatus === "Paid" ? "1010" : "2100", // Cash or A/P
+          type: "Credit",
+          amount: total
+        }
+      ],
+      referenceId: purchase._id,
+      referenceType: "Purchase"
+    });
+
+    // =========================
     // STOCK HISTORY
     // =========================
 
@@ -111,6 +134,16 @@ export const createPurchase = async (req, res) => {
       newStock;
 
     await productData.save();
+
+    // Log audit activity
+    logAudit(
+      req,
+      "CREATE",
+      "Purchases",
+      purchase._id,
+      `Purchase invoice logged: ${invoiceNumber} for ₹${total.toLocaleString()}`,
+      { product: productData.name, quantity, total }
+    );
 
     // =========================
     // PURCHASE NOTIFICATION
@@ -380,6 +413,16 @@ export const deletePurchase = async (req, res) => {
 
     await Purchase.findByIdAndDelete(
       req.params.id
+    );
+
+    // Log audit activity
+    logAudit(
+      req,
+      "DELETE",
+      "Purchases",
+      purchase._id,
+      `Purchase record deleted: ${purchase.invoiceNumber} for ₹${purchase.total.toLocaleString()}`,
+      { invoiceNumber: purchase.invoiceNumber, total: purchase.total }
     );
 
     console.log("PURCHASE DELETED");

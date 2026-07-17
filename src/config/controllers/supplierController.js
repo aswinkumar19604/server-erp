@@ -1,5 +1,5 @@
-import Supplier
-from "../models/Supplier.js";
+import Supplier from "../models/Supplier.js";
+import { logAudit } from "../utils/auditLogger.js";
 
 export const createSupplier =
 async (req, res) => {
@@ -42,6 +42,15 @@ async (req, res) => {
         address,
         gstNumber
       });
+
+    logAudit(
+      req,
+      "CREATE",
+      "Purchases",
+      supplier._id,
+      `Supplier registered: ${supplier.name} (${supplier.email})`,
+      { name: supplier.name, email: supplier.email }
+    );
 
     res.status(201).json({
 
@@ -95,6 +104,15 @@ async (req, res) => {
         { new: true }
       );
 
+    logAudit(
+      req,
+      "UPDATE",
+      "Purchases",
+      supplier._id,
+      `Supplier records updated: ${supplier.name} (${supplier.email})`,
+      req.body
+    );
+
     res.status(200).json({
 
       message:
@@ -116,9 +134,25 @@ async (req, res) => {
 
   try {
 
-    await Supplier.findByIdAndDelete(
-      req.params.id
-    );
+    const supplier = await Supplier.findById(req.params.id);
+    if (supplier) {
+      await Supplier.findByIdAndDelete(
+        req.params.id
+      );
+
+      logAudit(
+        req,
+        "DELETE",
+        "Purchases",
+        supplier._id,
+        `Supplier record deleted: ${supplier.name} (${supplier.email})`,
+        { name: supplier.name, email: supplier.email }
+      );
+    } else {
+      await Supplier.findByIdAndDelete(
+        req.params.id
+      );
+    }
 
     res.status(200).json({
 

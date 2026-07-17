@@ -29,6 +29,14 @@ import hrRoutes from "./routes/hrRoutes.js";
 import projectRoutes from "./routes/projectRoutes.js";
 import leadRoutes from "./routes/leadRoutes.js";
 import expenseRoutes from "./routes/expenseRoutes.js";
+import purchaseOrderRoutes from "./routes/purchaseOrderRoutes.js";
+import goodsReceiptRoutes from "./routes/goodsReceiptRoutes.js";
+import doubleEntryRoutes from "./routes/doubleEntryRoutes.js";
+import essRoutes from "./routes/essRoutes.js";
+import mrpRoutes from "./routes/mrpRoutes.js";
+import salesWorkflowRoutes from "./routes/salesWorkflowRoutes.js";
+import auditRoutes from "./routes/auditRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
 
 const app = express();
 
@@ -91,4 +99,12 @@ app.use("/api/hr", hrRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/leads", leadRoutes);
 app.use("/api/expenses", expenseRoutes);
+app.use("/api/purchase-orders", purchaseOrderRoutes);
+app.use("/api/goods-receipts", goodsReceiptRoutes);
+app.use("/api/double-entry", doubleEntryRoutes);
+app.use("/api/ess", essRoutes);
+app.use("/api/mrp", mrpRoutes);
+app.use("/api/sales-workflow", salesWorkflowRoutes);
+app.use("/api/audit", auditRoutes);
+app.use("/api/chat", chatRoutes);
 export default app;

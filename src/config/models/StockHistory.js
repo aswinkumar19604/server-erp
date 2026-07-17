@@ -14,7 +14,10 @@ const stockHistorySchema = new mongoose.Schema({
       "SALE",
       "PURCHASE",
       "SALE_DELETE",
-      "PURCHASE_DELETE"
+      "PURCHASE_DELETE",
+      "GOODS_RECEIPT",
+      "PRODUCTION",
+      "DEDUCTION"
     ],
     required: true
   },

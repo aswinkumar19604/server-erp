@@ -1,5 +1,5 @@
-import Customer
-from "../models/Customer.js";
+import Customer from "../models/Customer.js";
+import { logAudit } from "../utils/auditLogger.js";
 
 export const createCustomer =
 async (req, res) => {
@@ -42,6 +42,15 @@ async (req, res) => {
         address,
         gstNumber
       });
+
+    logAudit(
+      req,
+      "CREATE",
+      "Sales",
+      customer._id,
+      `Customer registered: ${customer.name} (${customer.email})`,
+      { name: customer.name, email: customer.email }
+    );
 
     res.status(201).json({
 
@@ -95,6 +104,15 @@ async (req, res) => {
         { new: true }
       );
 
+    logAudit(
+      req,
+      "UPDATE",
+      "Sales",
+      customer._id,
+      `Customer records updated: ${customer.name} (${customer.email})`,
+      req.body
+    );
+
     res.status(200).json({
 
       message:
@@ -116,9 +134,25 @@ async (req, res) => {
 
   try {
 
-    await Customer.findByIdAndDelete(
-      req.params.id
-    );
+    const customer = await Customer.findById(req.params.id);
+    if (customer) {
+      await Customer.findByIdAndDelete(
+        req.params.id
+      );
+
+      logAudit(
+        req,
+        "DELETE",
+        "Sales",
+        customer._id,
+        `Customer record deleted: ${customer.name} (${customer.email})`,
+        { name: customer.name, email: customer.email }
+      );
+    } else {
+      await Customer.findByIdAndDelete(
+        req.params.id
+      );
+    }
 
     res.status(200).json({
 
