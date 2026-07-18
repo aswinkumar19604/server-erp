@@ -3,10 +3,11 @@ import mongoose from "mongoose";
 const supplierSchema =
 new mongoose.Schema({
 
- supplier: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "Supplier"
-},
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
 
   email: {
     type: String,

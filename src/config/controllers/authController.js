@@ -71,7 +71,8 @@ export const login = async (req, res) => {
       }
     );
 
-    await transporter.sendMail({
+    // Send email in background so SMTP connection issues do not block the login process
+    transporter.sendMail({
       from: process.env.MAIL_USER,
       to: user.email, 
       subject: "Login Successful",
@@ -79,7 +80,10 @@ export const login = async (req, res) => {
         <h2>Hello ${user.name}</h2>
         <p>You successfully logged into ERP System.</p>
       `
+    }).catch(err => {
+      console.log("Login success email background error:", err.message);
     });
+
 
     res.status(200).json({
       message: "Login successful",

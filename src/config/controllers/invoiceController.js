@@ -11,7 +11,7 @@ async (req, res) => {
     const sale =
       await Sale.findById(
         req.params.id
-      ).populate("product");
+      ).populate("product").populate("customer");
 
     if (!sale) {
 
@@ -117,7 +117,7 @@ async (req, res) => {
     );
 
     doc.text(
-      `: ${sale.customerName}`,
+      `: ${sale.customer?.name || "N/A"}`,
       160,
       195
     );
