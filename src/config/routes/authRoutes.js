@@ -4,8 +4,10 @@ import {
   register,
   login,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  getUsers
 } from "../controllers/authController.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -22,5 +24,7 @@ router.post(
   "/reset-password/:token",
   resetPassword
 );
+
+router.get("/users", authMiddleware, getUsers);
 
 export default router;
